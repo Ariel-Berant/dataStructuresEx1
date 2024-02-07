@@ -189,7 +189,18 @@ class AVLTree(object):
         return None
 
     def search(self, key):
-        return None
+        def search_recursion(search_key, node):
+            if node is None:
+                return None
+            else:
+                if node.get_key() == search_key:
+                    return node
+                elif node.get_height() < search_key:
+                    return search_recursion(search_key, node.get_right())
+                else:
+                    return search_recursion(search_key, node.get_left())
+
+        return search_recursion(key, self.root)
 
     """inserts val at position i in the dictionary
 
@@ -203,6 +214,28 @@ class AVLTree(object):
     """
 
     def insert(self, key, val):
+        new_node = AVLNode(key, val)
+        new_node.set_height(0)
+
+        def insert_inner(curr_node, parent, node):
+            if curr_node is None:
+                if parent.get_key() < node.get_key():
+                    parent.set_left(node)
+                else:
+                    parent.set_right(node)
+                node.set_parent(parent)
+            else:
+                curr_node.set_height(curr_node.get_height() + 1)
+                if curr_node.get_key() > node.get_key():
+                    insert_inner(curr_node.get_left(), curr_node, node)
+                else:
+                    insert_inner(curr_node.get_right(), curr_node, node)
+
+        if self.size == 0:
+            self.root = new_node
+        else:
+            insert_inner(self.root, None, new_node)
+
         return -1
 
     """deletes node from the dictionary
@@ -223,7 +256,17 @@ class AVLTree(object):
     """
 
     def avl_to_array(self):
-        return None
+        avl_array = []
+
+        def avl_to_array_inner(node):
+            if not node is None:
+                avl_to_array_inner(node.get_left())
+                avl_array.append((node.get_key(), node.get_val()))
+                avl_to_array_inner(node.get_right())
+
+        avl_to_array_inner(self.root)
+
+        return avl_array
 
     """returns the number of items in dictionary 
 
