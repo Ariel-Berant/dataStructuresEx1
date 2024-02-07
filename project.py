@@ -259,7 +259,7 @@ class AVLTree(object):
         avl_array = []
 
         def avl_to_array_inner(node):
-            if not node is None:
+            if node is not None:
                 avl_to_array_inner(node.get_left())
                 avl_array.append((node.get_key(), node.get_val()))
                 avl_to_array_inner(node.get_right())
