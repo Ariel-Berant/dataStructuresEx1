@@ -174,19 +174,48 @@ class AVLTree(object):
             while node.left.is_real_node():
                 node = node.left
             return node
-        if node.parent.left==node:
+        if node.parent.left == node:
             return node.parent
         return None
 
     def predecessor(self, node):
         if node.left.is_real_node():
-            node = left
+            node = node.left
             while node.right.is_real_node():
                 node = node.right
             return node
-        if node.parent.right==node:
+        if node.parent.right == node:
             return node.parent
         return None
+
+    def height_difference(self, node1, node2):
+        return abs(node1.height - node2.height)
+
+    def rotation_right(self, A, B):
+        B.left = A.right
+        B.left.parent = B
+        A.right = B
+        A.parent = B.parent
+        if B.parent.left == B:
+            A.parent.left = A
+        else:
+            A.parent.right = A
+        B.parent = A
+        if self.root == B:
+            self.root = A
+
+    def rotation_left(self, A, B):
+        B.right = A.left
+        B.right.parent = B
+        A.left = B
+        A.parent = B.parent
+        if B.parent.left == B:
+            A.parent.left = A
+        else:
+            A.parent.right = A
+        B.parent = A
+        if self.root == B:
+            self.root = A
 
     def search(self, key):
         def search_recursion(search_key, node):
@@ -259,7 +288,7 @@ class AVLTree(object):
         avl_array = []
 
         def avl_to_array_inner(node):
-            if not node is None:
+            if node is not None:
                 avl_to_array_inner(node.get_left())
                 avl_array.append((node.get_key(), node.get_val()))
                 avl_to_array_inner(node.get_right())
@@ -275,7 +304,7 @@ class AVLTree(object):
     """
 
     def size(self):
-        return self.size()
+        return self.size
 
     """splits the dictionary at the i'th index
 
@@ -305,6 +334,8 @@ class AVLTree(object):
     """
 
     def join(self, tree2, key, val):
+        self.size = self.size + tree2.size + 1
+        res = self.height_difference(self.root, tree2.root) + 1
         if tree2.root.height > self.root.height:
             t2 = tree2
             t1 = self
@@ -330,9 +361,24 @@ class AVLTree(object):
         x.set_height = t1.root + 1
         x.set_parent = node.parent
         temp = x.parent
-        while temp != None:
+        while temp is not None:
             temp.height += 1
             temp = temp.parent
+        height_change = self.height_difference(x.parent.left, x.parent.right)
+        if height_change == 2:
+            if self.height_difference(x.left, x.right) == 1:
+                self.rotation_right(x.left, x)
+            else:
+                self.rotation_left(x.left.right, x.left)
+                self.rotation_right(x.left, x)
+        if height_change == -2:
+            if self.height_difference(x.left, x.right) == -1:
+                self.rotation_left(x.right, x)
+            else:
+                self.rotation_left(x.right.left, x.right)
+                self.rotation_right(x.right, x)
+        self.root = temp
+        return res
 
     """returns the root of the tree representing the dictionary
 
