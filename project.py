@@ -111,7 +111,7 @@ class AVLNode(object):
     """
 
     def set_key(self, key):
-        self.key = node
+        self.key = key
 
     """sets value
 
@@ -120,7 +120,7 @@ class AVLNode(object):
     """
 
     def set_value(self, value):
-        self.value = node
+        self.value = value
 
     """sets the height of the node
 
@@ -168,7 +168,7 @@ class AVLTree(object):
     @returns: the AVLNode corresponding to key or None if key is not found.
     """
 
-    def succsessor(self, node):
+    def succsessor(node):
         if node.right.is_real_node():
             node = node.right
             while node.left.is_real_node():
