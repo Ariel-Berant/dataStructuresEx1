@@ -168,7 +168,7 @@ class AVLTree(object):
     @returns: the AVLNode corresponding to key or None if key is not found.
     """
 
-    def succsessor(node):
+    def successor(node):
         if node.right.is_real_node():
             node = node.right
             while node.left.is_real_node():
@@ -272,22 +272,27 @@ class AVLTree(object):
         else:
             insert_inner(self.root, None, new_node)
         temp = new_node.parent
+        rot_cnt = 0
         while temp is not None:
             height_change = self.height_difference(temp.parent.left, temp.parent.right)
             if height_change == 2:
                 if self.height_difference(temp.left, temp.right) == 1:
                     self.rotation_right(temp.left, temp)
+                    rot_cnt += 1
                 else:
                     self.rotation_left(temp.left.right, temp.left)
                     self.rotation_right(temp.left, temp)
+                    rot_cnt += 2
             if height_change == -2:
                 if self.height_difference(temp.left, temp.right) == -1:
                     self.rotation_left(temp.right, temp)
+                    rot_cnt += 1
                 else:
                     self.rotation_left(temp.right.left, temp.right)
                     self.rotation_right(temp.right, temp)
+                    rot_cnt += 2
             temp = temp.parent
-        return -1
+        return rot_cnt
 
     """deletes node from the dictionary
 
@@ -298,6 +303,18 @@ class AVLTree(object):
     """
 
     def delete(self, node):
+        node.successor().get_parent().set_left(node.succesor().get_right())
+        node.successor().set_parent(node.get_parent())
+        node.set_parent(None)
+        node.successor().set_left(node.get_left())
+        node.successor().set_right(node.get_right())
+        if node.get_parent() is None:
+            self.root = node.successor
+        node.set_right(None)
+        node.set_left(None)
+
+        self.update(self.root)
+
         return -1
 
     """returns an array representing dictionary 
