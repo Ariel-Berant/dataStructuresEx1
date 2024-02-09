@@ -168,7 +168,7 @@ class AVLTree(object):
     @returns: the AVLNode corresponding to key or None if key is not found.
     """
 
-    def succsessor(self, node):
+    def succsessor(node):
         if node.right.is_real_node():
             node = node.right
             while node.left.is_real_node():
