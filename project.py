@@ -23,6 +23,7 @@ class AVLNode(object):
         self.right = None
         self.parent = None
         self.height = -1
+        self.size = 1
 
     """returns the left child
     @rtype: AVLNode
@@ -111,7 +112,7 @@ class AVLNode(object):
     """
 
     def set_key(self, key):
-        self.key = node
+        self.key = key
 
     """sets value
 
@@ -120,7 +121,7 @@ class AVLNode(object):
     """
 
     def set_value(self, value):
-        self.value = node
+        self.value = value
 
     """sets the height of the node
 
@@ -156,7 +157,6 @@ class AVLTree(object):
 
     def __init__(self):
         self.root = None
-        self.size = 0
 
     # add your fields here
 
@@ -203,6 +203,7 @@ class AVLTree(object):
         B.parent = A
         if self.root == B:
             self.root = A
+        self.update(B)
 
     def rotation_left(self, A, B):
         B.right = A.left
@@ -216,6 +217,12 @@ class AVLTree(object):
         B.parent = A
         if self.root == B:
             self.root = A
+        self.update(B)
+
+    def update(self, node):
+        while node is not None:
+            node.size = node.right.size + node.left.size
+            node = node.parent
 
     def search(self, key):
         def search_recursion(search_key, node):
@@ -260,11 +267,26 @@ class AVLTree(object):
                 else:
                     insert_inner(curr_node.get_right(), curr_node, node)
 
-        if self.size == 0:
+        if self.root.size == 0:
             self.root = new_node
         else:
             insert_inner(self.root, None, new_node)
-
+        temp = new_node.parent
+        while temp is not None:
+            height_change = self.height_difference(temp.parent.left, temp.parent.right)
+            if height_change == 2:
+                if self.height_difference(temp.left, temp.right) == 1:
+                    self.rotation_right(temp.left, temp)
+                else:
+                    self.rotation_left(temp.left.right, temp.left)
+                    self.rotation_right(temp.left, temp)
+            if height_change == -2:
+                if self.height_difference(temp.left, temp.right) == -1:
+                    self.rotation_left(temp.right, temp)
+                else:
+                    self.rotation_left(temp.right.left, temp.right)
+                    self.rotation_right(temp.right, temp)
+            temp = temp.parent
         return -1
 
     """deletes node from the dictionary
@@ -304,7 +326,7 @@ class AVLTree(object):
     """
 
     def size(self):
-        return self.size
+        return self.root.size
 
     """splits the dictionary at the i'th index
 
@@ -334,7 +356,6 @@ class AVLTree(object):
     """
 
     def join(self, tree2, key, val):
-        self.size = self.size + tree2.size + 1
         res = self.height_difference(self.root, tree2.root) + 1
         if tree2.root.height > self.root.height:
             t2 = tree2
@@ -363,6 +384,7 @@ class AVLTree(object):
         temp = x.parent
         while temp is not None:
             temp.height += 1
+            temp.size = temp.size + tree2.root.size + 1
             temp = temp.parent
         height_change = self.height_difference(x.parent.left, x.parent.right)
         if height_change == 2:
