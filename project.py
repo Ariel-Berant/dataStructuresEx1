@@ -222,6 +222,7 @@ class AVLTree(object):
     def update(self, node):
         while node is not None:
             node.size = node.right.size + node.left.size
+            node.height = max(node.right.height, node.left.height)
             node = node.parent
 
     def search(self, key):
@@ -340,7 +341,24 @@ class AVLTree(object):
     """
 
     def split(self, node):
-        return None
+        lst = self.split_rec(node, self.root)
+        self.update(lst[0].root)
+        self.update(lst[1].root)
+        return lst
+
+    def split_rec(self, node, temp):
+        left = AVLTree()
+        left.insert(temp.left.key, temp.left.value)
+        right = AVLTree()
+        right.insert(temp.right.key, temp.right.value)
+        if temp == node:
+            return [left, right]
+        if temp.key < node.key:
+            [left_rec, right_rec] = right.split_rec(node, temp)
+            return [left_rec, right_rec.join(right, temp.key, temp.value)]
+        if temp.key > node.key:
+            [left_rec, right_rec] = left.split_rec(node, temp)
+            return [left_rec.join(left, temp.key, temp.value), right_rec]
 
     """joins self with key and another AVLTree
 
@@ -382,10 +400,7 @@ class AVLTree(object):
         x.set_height = t1.root + 1
         x.set_parent = node.parent
         temp = x.parent
-        while temp is not None:
-            temp.height += 1
-            temp.size = temp.size + tree2.root.size + 1
-            temp = temp.parent
+        self.update(temp)
         height_change = self.height_difference(x.parent.left, x.parent.right)
         if height_change == 2:
             if self.height_difference(x.left, x.right) == 1:
