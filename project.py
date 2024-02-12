@@ -23,7 +23,10 @@ class AVLNode(object):
         self.right = None
         self.parent = None
         self.height = -1
-        self.size = 1
+        if key is None:
+            self.size = 0
+        else:
+            self.size = 1
 
     """returns the left child
     @rtype: AVLNode
@@ -77,6 +80,12 @@ class AVLNode(object):
 
     def get_height(self):
         return self.height
+
+    def get_balance_factor(self):
+        return abs(self.left.height-self.right.height)
+
+    def get_size(self):
+        return self.size
 
     """sets left child
 
@@ -168,7 +177,7 @@ class AVLTree(object):
     @returns: the AVLNode corresponding to key or None if key is not found.
     """
 
-    def successor(node):
+    def successor(self, node):
         if node.right.is_real_node():
             node = node.right
             while node.left.is_real_node():
@@ -253,9 +262,13 @@ class AVLTree(object):
     def insert(self, key, val):
         new_node = AVLNode(key, val)
         new_node.set_height(0)
+        new_node.left = AVLNode(None, None)
+        new_node.right = AVLNode(None, None)
+        new_node.left.parent = new_node
+        new_node.right.parent = new_node
 
         def insert_inner(curr_node, parent, node):
-            if curr_node is None:
+            if not curr_node.is_real_node():
                 if parent.get_key() < node.get_key():
                     parent.set_left(node)
                 else:
@@ -268,7 +281,7 @@ class AVLTree(object):
                 else:
                     insert_inner(curr_node.get_right(), curr_node, node)
 
-        if self.root.size == 0:
+        if self.root is None:
             self.root = new_node
         else:
             insert_inner(self.root, None, new_node)
@@ -442,3 +455,5 @@ class AVLTree(object):
 
     def get_root(self):
         return self.root
+
+
