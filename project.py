@@ -230,8 +230,8 @@ class AVLTree(object):
 
     def update(self, node):
         while node is not None:
-            node.size = node.right.size + node.left.size
-            node.height = max(node.right.height, node.left.height)
+            node.size = node.right.size + node.left.size + 1
+            node.height = max(node.right.height, node.left.height) + 1
             node = node.parent
 
     def search(self, key):
@@ -241,7 +241,7 @@ class AVLTree(object):
             else:
                 if node.get_key() == search_key:
                     return node
-                elif node.get_height() < search_key:
+                elif node.get_key() < search_key:
                     return search_recursion(search_key, node.get_right())
                 else:
                     return search_recursion(search_key, node.get_left())
@@ -285,28 +285,8 @@ class AVLTree(object):
             self.root = new_node
         else:
             insert_inner(self.root, None, new_node)
-        temp = new_node.parent
-        rot_cnt = 0
-        while temp is not None:
-            height_change = self.height_difference(temp.parent.left, temp.parent.right)
-            if height_change == 2:
-                if self.height_difference(temp.left, temp.right) == 1:
-                    self.rotation_right(temp.left, temp)
-                    rot_cnt += 1
-                else:
-                    self.rotation_left(temp.left.right, temp.left)
-                    self.rotation_right(temp.left, temp)
-                    rot_cnt += 2
-            if height_change == -2:
-                if self.height_difference(temp.left, temp.right) == -1:
-                    self.rotation_left(temp.right, temp)
-                    rot_cnt += 1
-                else:
-                    self.rotation_left(temp.right.left, temp.right)
-                    self.rotation_right(temp.right, temp)
-                    rot_cnt += 2
-            temp = temp.parent
-        return rot_cnt
+
+        return self.fix_rotations(new_node.get_parent())
 
     """deletes node from the dictionary
 
@@ -317,19 +297,20 @@ class AVLTree(object):
     """
 
     def delete(self, node):
-        node.successor().get_parent().set_left(node.succesor().get_right())
-        node.successor().set_parent(node.get_parent())
-        node.set_parent(None)
-        node.successor().set_left(node.get_left())
-        node.successor().set_right(node.get_right())
-        if node.get_parent() is None:
-            self.root = node.successor
+        temp = node.successor()
+        temp.get_parent().set_left(temp.get_right())
+        if temp.get_right() is not None:
+            temp.get_right().set_parent(temp.get_parent())
+        temp.set_parent(node.get_parent())
+        temp.set_left(node.get_left())
+        temp.set_right(node.get_right())
+        if temp.get_parent() is None:
+            self.root = temp
         node.set_right(None)
         node.set_left(None)
+        node.set_parent(None)
 
-        self.update(self.root)
-
-        return -1
+        return self.fix_rotations(temp.get_parent())
 
     """returns an array representing dictionary 
 
@@ -456,4 +437,25 @@ class AVLTree(object):
     def get_root(self):
         return self.root
 
-
+    def fix_rotations(self, node):
+        rot_cnt = 0  # rotation counter
+        while node is not None:
+            height_change = self.height_difference(node.parent.left, node.parent.right)
+            if height_change == 2:
+                if self.height_difference(node.left, node.right) == 1:
+                    self.rotation_right(node.left, node)
+                    rot_cnt += 1
+                else:
+                    self.rotation_left(node.left.right, node.left)
+                    self.rotation_right(node.left, node)
+                    rot_cnt += 2
+            if height_change == -2:
+                if self.height_difference(node.left, node.right) == -1:
+                    self.rotation_left(node.right, node)
+                    rot_cnt += 1
+                else:
+                    self.rotation_left(node.right.left, node.right)
+                    self.rotation_right(node.right, node)
+                    rot_cnt += 2
+            node = node.parent
+        return rot_cnt
