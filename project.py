@@ -297,20 +297,40 @@ class AVLTree(object):
     """
 
     def delete(self, node):
-        temp = node.successor()
-        temp.get_parent().set_left(temp.get_right())
-        if temp.get_right() is not None:
-            temp.get_right().set_parent(temp.get_parent())
-        temp.set_parent(node.get_parent())
-        temp.set_left(node.get_left())
-        temp.set_right(node.get_right())
-        if temp.get_parent() is None:
-            self.root = temp
-        node.set_right(None)
-        node.set_left(None)
-        node.set_parent(None)
+        if node.get_right() is None or node.get_left() is None:
+            if node.get_right() is not None:
+                node.get_right().set_parent(node.get_parent())
+                if node.get_parent().get_value() > node.get_value():
+                    node.get_parent().set_right(node.get_right())
+                else:
+                    node.get_parent().set_left(node.get_right())
+            else:
+                node.get_left().set_parent(node.get_parent())
+                if node.get_parent().get_value() > node.get_value():
+                    node.get_parent().set_right(node.get_left())
+                else:
+                    node.get_parent().set_left(node.get_left())
 
-        return self.fix_rotations(temp.get_parent())
+            temp = node.get_parent()
+            node.set_parent(None)
+            node.set_right(None)
+            node.set_left(None)
+
+        else:
+            temp = node.successor()
+            temp.get_parent().set_left(temp.get_right())
+            if temp.get_right() is not None:
+                temp.get_right().set_parent(temp.get_parent())
+            temp.set_parent(node.get_parent())
+            temp.set_left(node.get_left())
+            temp.set_right(node.get_right())
+            if temp.get_parent() is None:
+                self.root = temp
+            node.set_right(None)
+            node.set_left(None)
+            node.set_parent(None)
+
+        return self.fix_rotations(temp)
 
     """returns an array representing dictionary 
 
