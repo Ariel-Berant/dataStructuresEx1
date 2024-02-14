@@ -244,7 +244,7 @@ class AVLTree(object):
             else:
                 if node.get_key() == search_key:
                     return node
-                elif node.get_height() < search_key:
+                elif node.get_key() < search_key:
                     return search_recursion(search_key, node.get_right())
                 else:
                     return search_recursion(search_key, node.get_left())
@@ -312,6 +312,8 @@ class AVLTree(object):
             temp = temp.parent
         return rot_cnt
 
+#        return self.fix_rotations(new_node.get_parent())
+
     """deletes node from the dictionary
 
     @type node: AVLNode
@@ -330,10 +332,40 @@ class AVLTree(object):
             self.root = self.successor(node)
         node.set_right(None)
         node.set_left(None)
+        if node.get_right() is None or node.get_left() is None:
+            if node.get_right() is not None:
+                node.get_right().set_parent(node.get_parent())
+                if node.get_parent().get_value() > node.get_value():
+                    node.get_parent().set_right(node.get_right())
+                else:
+                    node.get_parent().set_left(node.get_right())
+            else:
+                node.get_left().set_parent(node.get_parent())
+                if node.get_parent().get_value() > node.get_value():
+                    node.get_parent().set_right(node.get_left())
+                else:
+                    node.get_parent().set_left(node.get_left())
 
-        self.update(self.root)
+            temp = node.get_parent()
+            node.set_parent(None)
+            node.set_right(None)
+            node.set_left(None)
 
-        return -1
+        else:
+            temp = node.successor()
+            temp.get_parent().set_left(temp.get_right())
+            if temp.get_right() is not None:
+                temp.get_right().set_parent(temp.get_parent())
+            temp.set_parent(node.get_parent())
+            temp.set_left(node.get_left())
+            temp.set_right(node.get_right())
+            if temp.get_parent() is None:
+                self.root = temp
+            node.set_right(None)
+            node.set_left(None)
+            node.set_parent(None)
+
+        return self.fix_rotations(temp)
 
     """returns an array representing dictionary 
 
@@ -459,3 +491,26 @@ class AVLTree(object):
 
     def get_root(self):
         return self.root
+
+    def fix_rotations(self, node):
+        rot_cnt = 0  # rotation counter
+        while node is not None:
+            height_change = self.height_difference(node.parent.left, node.parent.right)
+            if height_change == 2:
+                if self.height_difference(node.left, node.right) == 1:
+                    self.rotation_right(node.left, node)
+                    rot_cnt += 1
+                else:
+                    self.rotation_left(node.left.right, node.left)
+                    self.rotation_right(node.left, node)
+                    rot_cnt += 2
+            if height_change == -2:
+                if self.height_difference(node.left, node.right) == -1:
+                    self.rotation_left(node.right, node)
+                    rot_cnt += 1
+                else:
+                    self.rotation_left(node.right.left, node.right)
+                    self.rotation_right(node.right, node)
+                    rot_cnt += 2
+            node = node.parent
+        return rot_cnt
