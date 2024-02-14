@@ -152,56 +152,6 @@ class AVLNode(object):
             return False
         return True
 
-    def display(self):
-        lines, *_ = self._display_aux()
-        for line in lines:
-            print(line)
-
-    def _display_aux(self):
-        """Returns list of strings, width, height, and horizontal coordinate of the root."""
-        # No child.
-        if self.right is None and self.left is None:
-            line = '%s' % self.key
-            width = len(line)
-            height = 1
-            middle = width // 2
-            return [line], width, height, middle
-
-        # Only left child.
-        if self.right is None:
-            lines, n, p, x = self.left._display_aux()
-            s = '%s' % self.key
-            u = len(s)
-            first_line = (x + 1) * ' ' + (n - x - 1) * '_' + s
-            second_line = x * ' ' + '/' + (n - x - 1 + u) * ' '
-            shifted_lines = [line + u * ' ' for line in lines]
-            return [first_line, second_line] + shifted_lines, n + u, p + 2, n + u // 2
-
-        # Only right child.
-        if self.left is None:
-            lines, n, p, x = self.right._display_aux()
-            s = '%s' % self.key
-            u = len(s)
-            first_line = s + x * '_' + (n - x) * ' '
-            second_line = (u + x) * ' ' + '\\' + (n - x - 1) * ' '
-            shifted_lines = [u * ' ' + line for line in lines]
-            return [first_line, second_line] + shifted_lines, n + u, p + 2, u // 2
-
-        # Two children.
-        left, n, p, x = self.left._display_aux()
-        right, m, q, y = self.right._display_aux()
-        s = '%s' % self.key
-        u = len(s)
-        first_line = (x + 1) * ' ' + (n - x - 1) * '_' + s + y * '_' + (m - y) * ' '
-        second_line = x * ' ' + '/' + (n - x - 1 + u + y) * ' ' + '\\' + (m - y - 1) * ' '
-        if p < q:
-            left += [n * ' '] * (q - p)
-        elif q < p:
-            right += [m * ' '] * (p - q)
-        zipped_lines = zip(left, right)
-        lines = [first_line, second_line] + [a + u * ' ' + b for a, b in zipped_lines]
-        return lines, n + m + u, max(p, q) + 2, n + u // 2
-
 
 """
 A class implementing the ADT Dictionary, using an AVL tree.
@@ -360,8 +310,8 @@ class AVLTree(object):
                     self.rotation_left(temp.right, temp)
                     rot_cnt += 1
                 else:
-                    self.rotation_left(temp.right.left, temp.right)
-                    self.rotation_right(temp.right, temp)
+                    self.rotation_right(temp.right.left, temp.right)
+                    self.rotation_left(temp.right, temp)
                     rot_cnt += 2
             temp = temp.parent
         return rot_cnt
@@ -459,6 +409,8 @@ class AVLTree(object):
     """
 
     def split(self, node):
+        print(node.key, "hi")
+        print_tree(self.root)
         lst = self.split_rec(node, self.root)
         if lst[0].root is not None:
             self.update(lst[0].root)
@@ -471,14 +423,16 @@ class AVLTree(object):
         left.insert(temp.left.key, temp.left.value)
         right = AVLTree()
         right.insert(temp.right.key, temp.right.value)
-        if temp == node:
+        if temp.key == node.key:
             return [left, right]
         if temp.key < node.key:
-            [left_rec, right_rec] = right.split_rec(left.root, temp)
-            return [left_rec, right_rec.join(right, temp.key, temp.value)]
+            [left_rec, right_rec] = self.split_rec(node, right.root)
+            right_rec.join(right, temp.key, temp.value)
+            return [left_rec, right_rec]
         if temp.key > node.key:
-            [left_rec, right_rec] = left.split_rec(right.root, temp)
-            return [left_rec.join(left, temp.key, temp.value), right_rec]
+            [left_rec, right_rec] = self.split_rec(node, left.root)
+            left_rec.join(left, temp.key, temp.value)
+            return [left_rec, right_rec]
 
     """joins self with key and another AVLTree
 
@@ -524,8 +478,8 @@ class AVLTree(object):
         else:
             x.set_left(t2.root)
             x.set_right(t1.root)
-        x.set_height = t1.root + 1
-        x.set_parent = node.parent
+        x.set_height(t1.root.height + 1)
+        x.set_parent(node.parent)
         temp = x.parent
         self.update(temp)
         height_change = self.height_difference(x.parent.left, x.parent.right)
@@ -575,3 +529,10 @@ class AVLTree(object):
                     rot_cnt += 2
             node = node.parent
         return rot_cnt
+
+
+def print_tree(node, level=0):
+    if node is not None:
+        print_tree(node.left, level + 1)
+        print(' ' * 4 * level + '-> ' + str(node.value))
+        print_tree(node.right, level + 1)
