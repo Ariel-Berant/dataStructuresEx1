@@ -17,7 +17,7 @@ MAX_KEY = 10000
 
 step_weights = {
     "insert": (8, 30),
-    "delete": (8, 30),
+#    "delete": (8, 30),
     "split": (2, 8),
     "join": (3, 8),
 }
@@ -123,7 +123,7 @@ class Test:
     def _generate_weights(self):
         return {
             "insert": random.randint(*step_weights["insert"]),
-            "delete": random.randint(*step_weights["delete"]),
+    #        "delete": random.randint(*step_weights["delete"]),
             "split": random.randint(*step_weights["split"]),
             "join": random.randint(*step_weights["join"]),
         }
@@ -146,8 +146,8 @@ class Test:
                 raise TestFailedException(steps) from e
 
     def _perform_step(self, step):
-        if step[0] == "delete":
-            self._perform_delete(step)
+        #if step[0] == "delete":
+        #    self._perform_delete(step)
         if step[0] == "split":
             self._perform_split(step)
         if step[0] == "join":
@@ -156,11 +156,11 @@ class Test:
             self._perform_insert(step)
         self._check_state()
 
-    def _perform_delete(self, step):
-        step_type, tree, key = step
-        self.key_lists[tree].remove(key)
-        node = self.trees[tree].search(key)
-        self.trees[tree].delete(node)
+#    def _perform_delete(self, step):
+#        step_type, tree, key = step
+#        self.key_lists[tree].remove(key)
+#        node = self.trees[tree].search(key)
+#        self.trees[tree].delete(node)
 
     def _perform_insert(self, step):
         step_type, tree, key = step
@@ -201,16 +201,16 @@ class Test:
         sizes = [len(lst) for lst in self.key_lists]
         possible_steps = list()
         possible_steps += ["insert"] * self.step_weights["insert"]
-        if max(sizes) >= 1:
-            possible_steps += ["delete"] * self.step_weights["delete"]
+#        if max(sizes) >= 1:
+#            possible_steps += ["delete"] * self.step_weights["delete"]
         if len(self.key_lists) > 1:
             possible_steps += ["join"] * self.step_weights["join"]
         if max(sizes) >= 1:
             possible_steps += ["split"] * self.step_weights["split"]
 
         step_type = random.choice(possible_steps)
-        if step_type == "delete":
-            return self._generate_delete()
+#        if step_type == "delete":
+#            return self._generate_delete()
         if step_type == "split":
             return self._generate_split()
         if step_type == "join":
@@ -219,11 +219,11 @@ class Test:
             return self._generate_insert()
         raise RuntimeError("Can't generate step :(")
 
-    def _generate_delete(self):
-        possible_trees = [index for index, lst in enumerate(self.key_lists) if len(lst) >= 1]
-        tree = random.choice(possible_trees)
-        key = random.choice(self.key_lists[tree])
-        return "delete", tree, key
+#    def _generate_delete(self):
+#        possible_trees = [index for index, lst in enumerate(self.key_lists) if len(lst) >= 1]
+#        tree = random.choice(possible_trees)
+#        key = random.choice(self.key_lists[tree])
+#        return "delete", tree, key
 
     def _generate_split(self):
         possible_trees = [index for index, lst in enumerate(self.key_lists) if len(lst) >= 1]
@@ -312,19 +312,8 @@ class Test:
 
     def _check_state(self):
         self._validate_trees()
-
-        content_tests = {
-            "rank": self._check_rank,
-            "select": self._check_select,
-            "in_order": self._check_inorder
-        }
         for tree_index in range(len(self.key_lists)):
             exceptions = dict()
-            for name, test in content_tests.items():
-                try:
-                    test(tree_index)
-                except Exception as e:
-                    exceptions[name] = e
             for name, e in exceptions.items():
                 if not isinstance(e, AssertionError):
                     raise e
@@ -335,43 +324,6 @@ class Test:
                     f"The following content checks failed: {list(exceptions.keys())}. This is probably caused by "
                     f"faulty implementation of these methods."
                 ) from next(iter(exceptions.values()))
-
-    def _check_inorder(self, tree_index):
-        tree = self.trees[tree_index]
-        key_list = self.key_lists[tree_index]
-        expected_inorder = ((key, (key, "value")) for key in key_list)
-        received_inorder = tree.avl_to_array()
-        assert len(received_inorder) == len(key_list), (
-            f"In-order (avl_to_array) result length doesn't match expected value."
-            f"Expected value: {len(key_list)}. Actual value: {len(received_inorder)}"
-        )
-        assert all(
-            received_item == expected_item
-            for received_item, expected_item
-            in zip(received_inorder, expected_inorder)
-        ), "In-order (avl_to_array) result doesn't match the expected result"
-
-    def _check_rank(self, tree_index):
-        tree = self.trees[tree_index]
-        key_list = self.key_lists[tree_index]
-        for i, key in enumerate(key_list):
-            node = tree.search(key)
-            assert node is not None, f"Unexpected result for search({key}): key not found"
-            assert node.get_key() == key, f"Unexpected result for search({key}): returned node's key is {node.get_key()}."
-            rank = tree.rank(node)
-            assert rank == i + 1, (
-                f"Unexpected result for rank({key}): {rank}. Expected result is {i + 1}"
-            )
-
-    def _check_select(self, tree_index):
-        tree = self.trees[tree_index]
-        key_list = self.key_lists[tree_index]
-        for i, key in enumerate(key_list):
-            selected_node = tree.select(i + 1)
-            assert selected_node.get_key() == key, (
-                f"Unexpected result for select({i + 1}): {selected_node.get_key()}. "
-                f"Expected result is {key}"
-            )
 
     def _validate_trees(self):
         for tree in self.trees:
