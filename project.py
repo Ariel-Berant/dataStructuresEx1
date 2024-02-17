@@ -234,14 +234,27 @@ class AVLTree(object):
         if not node.is_real_node():
             node.set_size(0)
             node.set_height(-1)
-        while node is not None:
-            node.size = node.right.size + node.left.size + 1
-            node.height = max(node.right.height, node.left.height) + 1
-            node = node.parent
+        else:
+            while node is not None:
+                if node.left is None and node.right is None:
+                    node.size = 1
+                    node.height = 0
+                elif node.left is None:
+                    node.size = node.right.size + 1
+                    node.height = node.right.height + 1
+                elif node.right is None:
+                    node.size = node.left.size + 1
+                    node.height = node.left.height + 1
+                else:
+                    node.size = node.right.size + node.left.size + 1
+                    node.height = max(node.right.height, node.left.height) + 1
+                node = node.parent
 
     def search(self, key):
         def search_recursion(search_key, node):
             if node is None:
+                return None
+            if not node.is_real_node():
                 return None
             else:
                 if node.get_key() == search_key:
@@ -409,6 +422,10 @@ class AVLTree(object):
     """
 
     def split(self, node):
+        if node is None:
+            return [self, AVLTree()]
+        if not node.is_real_node:
+            return [self, AVLTree()]
         print(node.key, "hi")
         print_tree(self.root)
         lst = self.split_rec(node, self.root)
@@ -420,9 +437,9 @@ class AVLTree(object):
 
     def split_rec(self, node, temp):
         left = AVLTree()
-        left.insert(temp.left.key, temp.left.value)
+        left.root = temp.left
         right = AVLTree()
-        right.insert(temp.right.key, temp.right.value)
+        right.root = temp.right
         if temp.key == node.key:
             return [left, right]
         if temp.key < node.key:
@@ -455,13 +472,22 @@ class AVLTree(object):
             tree2.insert(key, val)
             self.root = tree2.root
             return self.root.height + 1
+        if not tree2.root.is_real_node():
+            self.insert(key, val)
+            return self.root.height + 1
+        if not self.root.is_real_node():
+            tree2.insert(key, val)
+            self.root = tree2.root
+            return self.root.height + 1
         res = self.height_difference(self.root, tree2.root) + 1
         if tree2.root.height > self.root.height:
+            t1 = AVLTree()
             t2 = tree2
-            t1 = self
+            t1.root = self.root
         else:
+            t2 = AVLTree()
             t1 = tree2
-            t2 = self
+            t2.root = self.root
         node = t2.root
         for i in range(t2.root.height):
             if node.height == t1.root.height:

@@ -334,6 +334,7 @@ class Test:
     def _validate_node(self, node):
         if not is_real_node(node):
             size = node.get_size()
+            hi = 5
             assert size == 0, f"Incorrect size of virtual node: {size}"
             height = node.get_height()
             assert height == -1, f"Incorrect height of virtual node: {height}"
