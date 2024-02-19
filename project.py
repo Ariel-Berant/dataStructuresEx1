@@ -441,6 +441,12 @@ class AVLTree(object):
         right = AVLTree()
         right.root = temp.right
         if temp.key == node.key:
+            temp_left = left.root
+            temp_right = right.root
+            temp_left.parent = None
+            temp_right.parent = None
+            left.root = temp_left
+            right.root = temp.right
             return [left, right]
         if temp.key < node.key:
             [left_rec, right_rec] = self.split_rec(node, right.root)
@@ -521,6 +527,8 @@ class AVLTree(object):
             else:
                 self.rotation_left(x.right.left, x.right)
                 self.rotation_right(x.right, x)
+        while temp.parent is not None:
+            temp = temp.parent
         self.root = temp
         return res
 

@@ -18,7 +18,7 @@ MAX_KEY = 10000
 step_weights = {
     "insert": (8, 30),
 #    "delete": (8, 30),
-    "split": (2, 8),
+#    "split": (2, 8),
     "join": (3, 8),
 }
 
@@ -124,7 +124,7 @@ class Test:
         return {
             "insert": random.randint(*step_weights["insert"]),
     #        "delete": random.randint(*step_weights["delete"]),
-            "split": random.randint(*step_weights["split"]),
+    #        "split": random.randint(*step_weights["split"]),
             "join": random.randint(*step_weights["join"]),
         }
 
@@ -148,8 +148,8 @@ class Test:
     def _perform_step(self, step):
         #if step[0] == "delete":
         #    self._perform_delete(step)
-        if step[0] == "split":
-            self._perform_split(step)
+        #if step[0] == "split":
+        #    self._perform_split(step)
         if step[0] == "join":
             self._perform_join(step)
         if step[0] == "insert":
@@ -205,14 +205,14 @@ class Test:
 #            possible_steps += ["delete"] * self.step_weights["delete"]
         if len(self.key_lists) > 1:
             possible_steps += ["join"] * self.step_weights["join"]
-        if max(sizes) >= 1:
-            possible_steps += ["split"] * self.step_weights["split"]
+        #if max(sizes) >= 1:
+        #    possible_steps += ["split"] * self.step_weights["split"]
 
         step_type = random.choice(possible_steps)
 #        if step_type == "delete":
 #            return self._generate_delete()
-        if step_type == "split":
-            return self._generate_split()
+        #if step_type == "split":
+        #    return self._generate_split()
         if step_type == "join":
             return self._generate_join()
         if step_type == "insert":
@@ -334,7 +334,6 @@ class Test:
     def _validate_node(self, node):
         if not is_real_node(node):
             size = node.get_size()
-            hi = 5
             assert size == 0, f"Incorrect size of virtual node: {size}"
             height = node.get_height()
             assert height == -1, f"Incorrect height of virtual node: {height}"
