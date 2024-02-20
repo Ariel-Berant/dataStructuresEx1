@@ -18,7 +18,7 @@ MAX_KEY = 10000
 step_weights = {
     "insert": (8, 30),
 #    "delete": (8, 30),
-#    "split": (2, 8),
+    "split": (3, 8),
     "join": (3, 8),
 }
 
@@ -124,7 +124,7 @@ class Test:
         return {
             "insert": random.randint(*step_weights["insert"]),
     #        "delete": random.randint(*step_weights["delete"]),
-    #        "split": random.randint(*step_weights["split"]),
+            "split": random.randint(*step_weights["split"]),
             "join": random.randint(*step_weights["join"]),
         }
 
@@ -148,8 +148,8 @@ class Test:
     def _perform_step(self, step):
         #if step[0] == "delete":
         #    self._perform_delete(step)
-        #if step[0] == "split":
-        #    self._perform_split(step)
+        if step[0] == "split":
+            self._perform_split(step)
         if step[0] == "join":
             self._perform_join(step)
         if step[0] == "insert":
@@ -205,14 +205,14 @@ class Test:
 #            possible_steps += ["delete"] * self.step_weights["delete"]
         if len(self.key_lists) > 1:
             possible_steps += ["join"] * self.step_weights["join"]
-        #if max(sizes) >= 1:
-        #    possible_steps += ["split"] * self.step_weights["split"]
+        if max(sizes) >= 1:
+            possible_steps += ["split"] * self.step_weights["split"]
 
         step_type = random.choice(possible_steps)
 #        if step_type == "delete":
 #            return self._generate_delete()
-        #if step_type == "split":
-        #    return self._generate_split()
+        if step_type == "split":
+            return self._generate_split()
         if step_type == "join":
             return self._generate_join()
         if step_type == "insert":
@@ -312,8 +312,17 @@ class Test:
 
     def _check_state(self):
         self._validate_trees()
+
+        content_tests = {
+            "in_order": self._check_inorder
+        }
         for tree_index in range(len(self.key_lists)):
             exceptions = dict()
+            for name, test in content_tests.items():
+                try:
+                    test(tree_index)
+                except Exception as e:
+                    exceptions[name] = e
             for name, e in exceptions.items():
                 if not isinstance(e, AssertionError):
                     raise e
@@ -324,6 +333,21 @@ class Test:
                     f"The following content checks failed: {list(exceptions.keys())}. This is probably caused by "
                     f"faulty implementation of these methods."
                 ) from next(iter(exceptions.values()))
+
+    def _check_inorder(self, tree_index):
+        tree = self.trees[tree_index]
+        key_list = self.key_lists[tree_index]
+        expected_inorder = ((key, (key, "value")) for key in key_list)
+        received_inorder = tree.avl_to_array()
+        assert len(received_inorder) == len(key_list), (
+            f"In-order (avl_to_array) result length doesn't match expected value."
+            f"Expected value: {len(key_list)}. Actual value: {len(received_inorder)}"
+        )
+        assert all(
+            received_item == expected_item
+            for received_item, expected_item
+            in zip(received_inorder, expected_inorder)
+        ), "In-order (avl_to_array) result doesn't match the expected result"
 
     def _validate_trees(self):
         for tree in self.trees:

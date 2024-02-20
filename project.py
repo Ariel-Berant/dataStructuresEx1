@@ -303,6 +303,8 @@ class AVLTree(object):
 
         if self.root is None:
             self.root = new_node
+        elif self.root.key is None:
+            self.root = new_node
         else:
             insert_inner(self.root, None, new_node)
         temp = new_node
@@ -393,9 +395,10 @@ class AVLTree(object):
 
         def avl_to_array_inner(node):
             if node is not None:
-                avl_to_array_inner(node.get_left())
-                avl_array.append((node.get_key(), node.get_val()))
-                avl_to_array_inner(node.get_right())
+                if node.is_real_node():
+                    avl_to_array_inner(node.get_left())
+                    avl_array.append((node.get_key(), node.get_value()))
+                    avl_to_array_inner(node.get_right())
 
         avl_to_array_inner(self.root)
 
@@ -422,40 +425,34 @@ class AVLTree(object):
     """
 
     def split(self, node):
-        if node is None:
-            return [self, AVLTree()]
-        if not node.is_real_node:
-            return [self, AVLTree()]
-        print(node.key, "hi")
-        print_tree(self.root)
-        lst = self.split_rec(node, self.root)
-        if lst[0].root is not None:
-            self.update(lst[0].root)
-        if lst[1].root is not None:
-            self.update(lst[1].root)
-        return lst
+        left_tree = AVLTree()
+        left_tree.root = node.left
+        left_tree.root.set_parent(None)
+        right_tree = AVLTree()
+        right_tree.root = node.right
+        right_tree.root.set_parent(None)
+        par = node.parent
+        while par is not None:
+            if par.key < node.key:
+                tree = AVLTree()
+                tree.root = par.left
+                trl = tree.root.left
+                trr = tree.root.right
+                par.left.set_parent(None)
+                tree.join(left_tree, par.key, par.value)
+                left_tree.root = tree.root
 
-    def split_rec(self, node, temp):
-        left = AVLTree()
-        left.root = temp.left
-        right = AVLTree()
-        right.root = temp.right
-        if temp.key == node.key:
-            temp_left = left.root
-            temp_right = right.root
-            temp_left.parent = None
-            temp_right.parent = None
-            left.root = temp_left
-            right.root = temp.right
-            return [left, right]
-        if temp.key < node.key:
-            [left_rec, right_rec] = self.split_rec(node, right.root)
-            right_rec.join(right, temp.key, temp.value)
-            return [left_rec, right_rec]
-        if temp.key > node.key:
-            [left_rec, right_rec] = self.split_rec(node, left.root)
-            left_rec.join(left, temp.key, temp.value)
-            return [left_rec, right_rec]
+            else:
+                tree = AVLTree()
+                tree.root = par.right
+                par.right.set_parent(None)
+                right_tree.join(tree, par.key, par.value)
+            par = par.parent
+        if not left_tree.root.is_real_node():
+            left_tree.root = None
+        if not right_tree.root.is_real_node():
+            right_tree.root = None
+        return left_tree, right_tree
 
     """joins self with key and another AVLTree
 
@@ -506,14 +503,25 @@ class AVLTree(object):
         x = AVLNode(key, val)
         if t1.root.key < t2.root.key:
             x.set_left(t1.root)
-            x.set_right(t2.root)
+            x.set_right(node)
         else:
-            x.set_left(t2.root)
+            x.set_left(node)
             x.set_right(t1.root)
-        x.set_height(t1.root.height + 1)
         x.set_parent(node.parent)
+        if key == 6011:
+            hi = 5
+        x.right.parent = x
+        x.left.parent = x
         temp = x.parent
-        self.update(temp)
+        if temp is None:
+            self.root = x
+            self.update(x)
+            return res
+        if temp.right == x.right or temp.right == x.left:
+            temp.right = x
+        if temp.left == x.right or temp.left == x.left:
+            temp.left = x
+        self.update(x)
         height_change = self.height_difference(x.parent.left, x.parent.right)
         if height_change == 2:
             if self.height_difference(x.left, x.right) == 1:
