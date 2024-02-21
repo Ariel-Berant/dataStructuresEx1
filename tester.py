@@ -9,7 +9,7 @@ from project import AVLTree
 
 BULK_MODE = False
 
-NUM_OF_TESTS = 1000
+NUM_OF_TESTS = 2000
 NUM_OF_STEPS = 512
 
 MIN_KEY = 0
