@@ -10,10 +10,10 @@ from project import AVLTree
 BULK_MODE = False
 
 NUM_OF_TESTS = 1000
-NUM_OF_STEPS = 512
+NUM_OF_STEPS = 500
 
 MIN_KEY = 0
-MAX_KEY = 10000
+MAX_KEY = 520
 
 step_weights = {
     "insert": (8, 30),
