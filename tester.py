@@ -9,16 +9,16 @@ from project import AVLTree
 
 BULK_MODE = False
 
-NUM_OF_TESTS = 1000
-NUM_OF_STEPS = 500
+NUM_OF_TESTS = 2000
+NUM_OF_STEPS = 512
 
 MIN_KEY = 0
-MAX_KEY = 520
+MAX_KEY = 10000
 
 step_weights = {
     "insert": (8, 30),
     "delete": (8, 30),
-#    "split": (2, 8),
+    "split": (3, 8),
     "join": (3, 8),
 }
 
@@ -124,7 +124,7 @@ class Test:
         return {
             "insert": random.randint(*step_weights["insert"]),
             "delete": random.randint(*step_weights["delete"]),
-    #        "split": random.randint(*step_weights["split"]),
+            "split": random.randint(*step_weights["split"]),
             "join": random.randint(*step_weights["join"]),
         }
 
@@ -148,8 +148,8 @@ class Test:
     def _perform_step(self, step):
         if step[0] == "delete":
             self._perform_delete(step)
-        #if step[0] == "split":
-        #    self._perform_split(step)
+        if step[0] == "split":
+            self._perform_split(step)
         if step[0] == "join":
             self._perform_join(step)
         if step[0] == "insert":
@@ -167,18 +167,18 @@ class Test:
         bisect.insort(self.key_lists[tree], key)
         self.trees[tree].insert(key, (key, "value"))
 
-#    def _perform_split(self, step):
-#        step_type, tree, key = step
-#        key_index = self.key_lists[tree].index(key)
-#        left_list = self.key_lists[tree][:key_index]
-#        right_list = self.key_lists[tree][key_index + 1:]
-#        right_list.sort()
-#        node = self.trees[tree].search(key)
-#        left_tree, right_tree = self.trees[tree].split(node)
-#        self.trees[tree] = left_tree
-#        self.trees.insert(tree + 1, right_tree)
-#        self.key_lists[tree] = left_list
-#        self.key_lists.insert(tree + 1, right_list)
+    def _perform_split(self, step):
+        step_type, tree, key = step
+        key_index = self.key_lists[tree].index(key)
+        left_list = self.key_lists[tree][:key_index]
+        right_list = self.key_lists[tree][key_index + 1:]
+        right_list.sort()
+        node = self.trees[tree].search(key)
+        left_tree, right_tree = self.trees[tree].split(node)
+        self.trees[tree] = left_tree
+        self.trees.insert(tree + 1, right_tree)
+        self.key_lists[tree] = left_list
+        self.key_lists.insert(tree + 1, right_list)
 
     def _perform_join(self, step):
         step_type, tree, key, is_right = step
@@ -205,14 +205,14 @@ class Test:
             possible_steps += ["delete"] * self.step_weights["delete"]
         if len(self.key_lists) > 1:
             possible_steps += ["join"] * self.step_weights["join"]
-#        if max(sizes) >= 1:
-#            possible_steps += ["split"] * self.step_weights["split"]
+        if max(sizes) >= 1:
+            possible_steps += ["split"] * self.step_weights["split"]
 
         step_type = random.choice(possible_steps)
         if step_type == "delete":
             return self._generate_delete()
-#        if step_type == "split":
-#            return self._generate_split()
+        if step_type == "split":
+            return self._generate_split()
         if step_type == "join":
             return self._generate_join()
         if step_type == "insert":
@@ -225,11 +225,11 @@ class Test:
         key = random.choice(self.key_lists[tree])
         return "delete", tree, key
 
-#    def _generate_split(self):
-#        possible_trees = [index for index, lst in enumerate(self.key_lists) if len(lst) >= 1]
-#        tree = random.choice(possible_trees)
-#        key = random.choice(self.key_lists[tree])
-#        return "split", tree, key
+    def _generate_split(self):
+        possible_trees = [index for index, lst in enumerate(self.key_lists) if len(lst) >= 1]
+        tree = random.choice(possible_trees)
+        key = random.choice(self.key_lists[tree])
+        return "split", tree, key
 
     def _generate_join(self):
         for i in range(1000):
@@ -312,8 +312,17 @@ class Test:
 
     def _check_state(self):
         self._validate_trees()
+
+        content_tests = {
+            "in_order": self._check_inorder
+        }
         for tree_index in range(len(self.key_lists)):
             exceptions = dict()
+            for name, test in content_tests.items():
+                try:
+                    test(tree_index)
+                except Exception as e:
+                    exceptions[name] = e
             for name, e in exceptions.items():
                 if not isinstance(e, AssertionError):
                     raise e
@@ -325,6 +334,21 @@ class Test:
                     f"faulty implementation of these methods."
                 ) from next(iter(exceptions.values()))
 
+    def _check_inorder(self, tree_index):
+        tree = self.trees[tree_index]
+        key_list = self.key_lists[tree_index]
+        expected_inorder = ((key, (key, "value")) for key in key_list)
+        received_inorder = tree.avl_to_array()
+        assert len(received_inorder) == len(key_list), (
+            f"In-order (avl_to_array) result length doesn't match expected value."
+            f"Expected value: {len(key_list)}. Actual value: {len(received_inorder)}"
+        )
+        assert all(
+            received_item == expected_item
+            for received_item, expected_item
+            in zip(received_inorder, expected_inorder)
+        ), "In-order (avl_to_array) result doesn't match the expected result"
+
     def _validate_trees(self):
         for tree in self.trees:
             if tree.get_root() is not None:
@@ -334,7 +358,6 @@ class Test:
     def _validate_node(self, node):
         if not is_real_node(node):
             size = node.get_size()
-            hi = 5
             assert size == 0, f"Incorrect size of virtual node: {size}"
             height = node.get_height()
             assert height == -1, f"Incorrect height of virtual node: {height}"

@@ -1,8 +1,8 @@
 # username - complete info
-# id1      - complete info
-# name1    - complete info
-# id2      - complete info
-# name2    - complete info
+# id1      - 204912810
+# name1    - Yaron Jacob
+# id2      - 325720258
+# name2    - Ariel Berant
 
 
 """A class representing a node in an AVL tree"""
@@ -525,7 +525,7 @@ class AVLTree(object):
         def avl_to_array_inner(node):
             if node.is_real_node():  # checks if we "fell off"
                 avl_to_array_inner(node.get_left())  # appends the smaller values
-                avl_array.append((node.get_key(), node.get_val()))  # appends current value
+                avl_array.append((node.get_key(), node.get_value()))  # appends current value
                 avl_to_array_inner(node.get_right())  # appends greater values
 
         if self.root is not None:  # checks if tree isn't empty
@@ -556,40 +556,36 @@ class AVLTree(object):
     """
 
     def split(self, node):
-        if node is None:
-            return [self, AVLTree()]
-        if not node.is_real_node:
-            return [self, AVLTree()]
-        print(node.key, "hi")
-        print_tree(self.root)
-        lst = self.split_rec(node, self.root)
-        if lst[0].root is not None:
-            self.update(lst[0].root)
-        if lst[1].root is not None:
-            self.update(lst[1].root)
-        return lst
+        if node.key == 3648:
+            hi = 5
+        left_tree = AVLTree()
+        left_tree.root = node.left
+        left_tree.root.set_parent(None)
+        right_tree = AVLTree()
+        right_tree.root = node.right
+        right_tree.root.set_parent(None)
+        par = node.parent
+        while par is not None:
+            if par.key < node.key:
+                tree = AVLTree()
+                tree.root = par.left
+                trl = tree.root.left
+                trr = tree.root.right
+                par.left.set_parent(None)
+                tree.join(left_tree, par.key, par.value)
+                left_tree.root = tree.root
 
-    def split_rec(self, node, temp):
-        left = AVLTree()
-        left.root = temp.left
-        right = AVLTree()
-        right.root = temp.right
-        if temp.key == node.key:
-            temp_left = left.root
-            temp_right = right.root
-            temp_left.parent = None
-            temp_right.parent = None
-            left.root = temp_left
-            right.root = temp.right
-            return [left, right]
-        if temp.key < node.key:
-            [left_rec, right_rec] = self.split_rec(node, right.root)
-            right_rec.join(right, temp.key, temp.value)
-            return [left_rec, right_rec]
-        if temp.key > node.key:
-            [left_rec, right_rec] = self.split_rec(node, left.root)
-            left_rec.join(left, temp.key, temp.value)
-            return [left_rec, right_rec]
+            else:
+                tree = AVLTree()
+                tree.root = par.right
+                par.right.set_parent(None)
+                right_tree.join(tree, par.key, par.value)
+            par = par.parent
+        if not left_tree.root.is_real_node():
+            left_tree.root = None
+        if not right_tree.root.is_real_node():
+            right_tree.root = None
+        return left_tree, right_tree
 
     """joins self with key and another AVLTree
 
@@ -630,40 +626,53 @@ class AVLTree(object):
             t2.root = self.root
         node = t2.root
         for i in range(t2.root.height):
-            if node.height == t1.root.height:
+            if node.height == t1.root.height or node.height == t1.root.height + 1:
                 break
             else:
-                if node.left.height > node.right.height:
+                if t1.root.key < t2.root.key:
                     node = node.left
                 else:
                     node = node.right
+        if key == 3648:
+            hi = 5
         x = AVLNode(key, val)
         if t1.root.key < t2.root.key:
             x.set_left(t1.root)
-            x.set_right(t2.root)
+            x.set_right(node)
         else:
-            x.set_left(t2.root)
+            x.set_left(node)
             x.set_right(t1.root)
-        x.set_height(t1.root.height + 1)
         x.set_parent(node.parent)
+        x.right.parent = x
+        x.left.parent = x
         temp = x.parent
-        self.update(temp)
-        height_change = self.height_difference(x.parent.left, x.parent.right)
-        if height_change == 2:
-            if self.height_difference(x.left, x.right) == 1:
-                self.rotation_right(x.left, x)
-            else:
-                self.rotation_left(x.left.right, x.left)
-                self.rotation_right(x.left, x)
-        if height_change == -2:
-            if self.height_difference(x.left, x.right) == -1:
-                self.rotation_left(x.right, x)
-            else:
-                self.rotation_left(x.right.left, x.right)
-                self.rotation_right(x.right, x)
-        while temp.parent is not None:
+        if temp is None:
+            self.root = x
+            self.update(x)
+            return res
+        if temp.right == x.right or temp.right == x.left:
+            temp.right = x
+        if temp.left == x.right or temp.left == x.left:
+            temp.left = x
+        self.update(x)
+        cur = temp
+        while temp is not None:
+            height_change = self.height_difference(temp.left, temp.right)
+            if height_change == 2:
+                if self.height_difference(temp.left.left, temp.left.right) == 1:
+                    self.rotation_right(temp.left, temp)
+                else:
+                    self.rotation_left(temp.left.right, temp.left)
+                    self.rotation_right(temp.left, temp)
+            if height_change == -2:
+                if self.height_difference(temp.right.left, temp.right.right) == -1:
+                    self.rotation_left(temp.right, temp)
+                else:
+                    self.rotation_right(temp.right.left, temp.right)
+                    self.rotation_left(temp.right, temp)
+            cur = temp
             temp = temp.parent
-        self.root = temp
+        self.root = cur
         return res
 
     """returns the root of the tree representing the dictionary
