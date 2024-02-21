@@ -17,7 +17,7 @@ MAX_KEY = 10000
 
 step_weights = {
     "insert": (8, 30),
-#    "delete": (8, 30),
+    "delete": (8, 30),
     "split": (3, 8),
     "join": (3, 8),
 }
@@ -123,7 +123,7 @@ class Test:
     def _generate_weights(self):
         return {
             "insert": random.randint(*step_weights["insert"]),
-    #        "delete": random.randint(*step_weights["delete"]),
+            "delete": random.randint(*step_weights["delete"]),
             "split": random.randint(*step_weights["split"]),
             "join": random.randint(*step_weights["join"]),
         }
@@ -146,8 +146,8 @@ class Test:
                 raise TestFailedException(steps) from e
 
     def _perform_step(self, step):
-        #if step[0] == "delete":
-        #    self._perform_delete(step)
+        if step[0] == "delete":
+            self._perform_delete(step)
         if step[0] == "split":
             self._perform_split(step)
         if step[0] == "join":
@@ -156,11 +156,11 @@ class Test:
             self._perform_insert(step)
         self._check_state()
 
-#    def _perform_delete(self, step):
-#        step_type, tree, key = step
-#        self.key_lists[tree].remove(key)
-#        node = self.trees[tree].search(key)
-#        self.trees[tree].delete(node)
+    def _perform_delete(self, step):
+        step_type, tree, key = step
+        self.key_lists[tree].remove(key)
+        node = self.trees[tree].search(key)
+        self.trees[tree].delete(node)
 
     def _perform_insert(self, step):
         step_type, tree, key = step
@@ -201,16 +201,16 @@ class Test:
         sizes = [len(lst) for lst in self.key_lists]
         possible_steps = list()
         possible_steps += ["insert"] * self.step_weights["insert"]
-#        if max(sizes) >= 1:
-#            possible_steps += ["delete"] * self.step_weights["delete"]
+        if max(sizes) >= 1:
+            possible_steps += ["delete"] * self.step_weights["delete"]
         if len(self.key_lists) > 1:
             possible_steps += ["join"] * self.step_weights["join"]
         if max(sizes) >= 1:
             possible_steps += ["split"] * self.step_weights["split"]
 
         step_type = random.choice(possible_steps)
-#        if step_type == "delete":
-#            return self._generate_delete()
+        if step_type == "delete":
+            return self._generate_delete()
         if step_type == "split":
             return self._generate_split()
         if step_type == "join":
@@ -219,11 +219,11 @@ class Test:
             return self._generate_insert()
         raise RuntimeError("Can't generate step :(")
 
-#    def _generate_delete(self):
-#        possible_trees = [index for index, lst in enumerate(self.key_lists) if len(lst) >= 1]
-#        tree = random.choice(possible_trees)
-#        key = random.choice(self.key_lists[tree])
-#        return "delete", tree, key
+    def _generate_delete(self):
+        possible_trees = [index for index, lst in enumerate(self.key_lists) if len(lst) >= 1]
+        tree = random.choice(possible_trees)
+        key = random.choice(self.key_lists[tree])
+        return "delete", tree, key
 
     def _generate_split(self):
         possible_trees = [index for index, lst in enumerate(self.key_lists) if len(lst) >= 1]

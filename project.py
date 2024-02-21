@@ -425,6 +425,8 @@ class AVLTree(object):
     """
 
     def split(self, node):
+        if node.key == 3648:
+            hi = 5
         left_tree = AVLTree()
         left_tree.root = node.left
         left_tree.root.set_parent(None)
@@ -493,13 +495,15 @@ class AVLTree(object):
             t2.root = self.root
         node = t2.root
         for i in range(t2.root.height):
-            if node.height == t1.root.height:
+            if node.height == t1.root.height or node.height == t1.root.height + 1:
                 break
             else:
-                if node.left.height > node.right.height:
+                if t1.root.key < t2.root.key:
                     node = node.left
                 else:
                     node = node.right
+        if key == 3648:
+            hi = 5
         x = AVLNode(key, val)
         if t1.root.key < t2.root.key:
             x.set_left(t1.root)
@@ -508,8 +512,6 @@ class AVLTree(object):
             x.set_left(node)
             x.set_right(t1.root)
         x.set_parent(node.parent)
-        if key == 6011:
-            hi = 5
         x.right.parent = x
         x.left.parent = x
         temp = x.parent
@@ -522,22 +524,24 @@ class AVLTree(object):
         if temp.left == x.right or temp.left == x.left:
             temp.left = x
         self.update(x)
-        height_change = self.height_difference(x.parent.left, x.parent.right)
-        if height_change == 2:
-            if self.height_difference(x.left, x.right) == 1:
-                self.rotation_right(x.left, x)
-            else:
-                self.rotation_left(x.left.right, x.left)
-                self.rotation_right(x.left, x)
-        if height_change == -2:
-            if self.height_difference(x.left, x.right) == -1:
-                self.rotation_left(x.right, x)
-            else:
-                self.rotation_left(x.right.left, x.right)
-                self.rotation_right(x.right, x)
-        while temp.parent is not None:
+        cur = temp
+        while temp is not None:
+            height_change = self.height_difference(temp.left, temp.right)
+            if height_change == 2:
+                if self.height_difference(temp.left.left, temp.left.right) == 1:
+                    self.rotation_right(temp.left, temp)
+                else:
+                    self.rotation_left(temp.left.right, temp.left)
+                    self.rotation_right(temp.left, temp)
+            if height_change == -2:
+                if self.height_difference(temp.right.left, temp.right.right) == -1:
+                    self.rotation_left(temp.right, temp)
+                else:
+                    self.rotation_right(temp.right.left, temp.right)
+                    self.rotation_left(temp.right, temp)
+            cur = temp
             temp = temp.parent
-        self.root = temp
+        self.root = cur
         return res
 
     """returns the root of the tree representing the dictionary
