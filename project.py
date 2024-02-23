@@ -1,8 +1,8 @@
 # username - complete info
-# id1      - complete info
-# name1    - complete info
-# id2      - complete info
-# name2    - complete info
+# id1      - 204912810
+# name1    - Yaron Jacob
+# id2      - 325720258
+# name2    - Ariel Berant
 
 
 """A class representing a node in an AVL tree"""
@@ -15,6 +15,8 @@ class AVLNode(object):
     @type value: any
     @param value: data of your node
     """
+
+    # Fixed number of actions, O(1)
 
     def __init__(self, key, value):
         self.key = key
@@ -30,6 +32,8 @@ class AVLNode(object):
     @returns: the left child of self, None if there is no left child (if self is virtual)
     """
 
+    # Returns a saved field, O(1)
+
     def get_left(self):
         return self.left
 
@@ -38,6 +42,8 @@ class AVLNode(object):
     @rtype: AVLNode
     @returns: the right child of self, None if there is no right child (if self is virtual)
     """
+
+    # Returns a saved field, O(1)
 
     def get_right(self):
         return self.right
@@ -48,6 +54,8 @@ class AVLNode(object):
     @returns: the parent of self, None if there is no parent
     """
 
+    # Returns a saved field, O(1)
+
     def get_parent(self):
         return self.parent
 
@@ -56,6 +64,8 @@ class AVLNode(object):
     @rtype: int or None
     @returns: the key of self, None if the node is virtual
     """
+
+    # Returns a saved field, O(1)
 
     def get_key(self):
         return self.key
@@ -66,6 +76,8 @@ class AVLNode(object):
     @returns: the value of self, None if the node is virtual
     """
 
+    # Returns a saved field, O(1)
+
     def get_value(self):
         return self.value
 
@@ -75,11 +87,29 @@ class AVLNode(object):
     @returns: the height of self, -1 if the node is virtual
     """
 
+    # Sets a field, O(1)
+
     def get_height(self):
         return self.height
 
+    """returns the balance factor
+
+        @rtype: int
+        @returns: height of the right child - height of left child
+    """
+
+    # Subtracts 2 results from O(1) calls, which is O(1)
+
     def get_balance_factor(self):
         return self.left.height - self.right.height
+
+    """returns the size
+
+        @rtype: int
+        @returns: the height of the current node's subtree
+    """
+
+    # Returns a saved field, O(1)
 
     def get_size(self):
         return self.size
@@ -90,6 +120,8 @@ class AVLNode(object):
     @param node: a node
     """
 
+    # Sets a field, O(1)
+
     def set_left(self, node):
         self.left = node
 
@@ -98,6 +130,8 @@ class AVLNode(object):
     @type node: AVLNode
     @param node: a node
     """
+
+    # Sets a field, O(1)
 
     def set_right(self, node):
         self.right = node
@@ -108,6 +142,8 @@ class AVLNode(object):
     @param node: a node
     """
 
+    # Sets a field, O(1)
+
     def set_parent(self, node):
         self.parent = node
 
@@ -116,6 +152,8 @@ class AVLNode(object):
     @type key: int or None
     @param key: key
     """
+
+    # Sets a field, O(1)
 
     def set_key(self, key):
         self.key = key
@@ -126,6 +164,8 @@ class AVLNode(object):
     @param value: data
     """
 
+    # Sets a field, O(1)
+
     def set_value(self, value):
         self.value = value
 
@@ -135,8 +175,16 @@ class AVLNode(object):
     @param h: the height
     """
 
+    # Sets a field, O(1)
+
     def set_height(self, h):
         self.height = h
+
+    """sets the size of the node subtree
+
+        @type size: int
+        @param size: the height
+    """
 
     def set_size(self, size):
         self.size = size
@@ -146,6 +194,8 @@ class AVLNode(object):
     @rtype: bool
     @returns: False if self is a virtual node, True otherwise.
     """
+
+    # Returns on condition, checks saved field, O(1)
 
     def is_real_node(self):
         if self.key is None:
@@ -164,18 +214,21 @@ class AVLTree(object):
 
     """
 
+    # Sets one field, O(1)
+
     def __init__(self):
         self.root = None
 
     # add your fields here
 
-    """searches for a AVLNode in the dictionary corresponding to the key
+    """returns the successor
 
-    @type key: int
-    @param key: a key to be searched
-    @rtype: AVLNode
-    @returns: the AVLNode corresponding to key or None if key is not found.
+        @rtype: AVLNode
+        @returns: the successor of node
     """
+
+    # Returns the node with the smallest key in the tree that is greater than node's key. Does a maximum of height of
+    # tree operations, which is log(n).
 
     def successor(self, node):
         if node.right.is_real_node():
@@ -187,84 +240,131 @@ class AVLTree(object):
             return node.parent
         return None
 
-    def predecessor(self, node):
-        if node.left.is_real_node():
-            node = node.left
-            while node.right.is_real_node():
-                node = node.right
-            return node
-        if node.parent.right == node:
-            return node.parent
-        return None
+    """returns the height difference
+
+            @rtype: int
+            @returns: the height of node1 - height of node2
+    """
+
+    # Returns subtraction of 2 O(1) operations, which is O(1)
 
     def height_difference(self, node1, node2):
         return node1.height - node2.height
 
+    """rotates right A and B, when B,get_left() is A
+
+                @rtype: None
+                @returns: None
+    """
+
+    # Runs a fixed number of O(1) operations, which is O(1)
+
     def rotation_right(self, A, B):
+        # Moves node between A and B
         B.left = A.right
         B.left.parent = B
         A.right = B
         A.parent = B.parent
+        # Replaces B with A in its father's left\right
         if B.parent is not None:
             if B.parent.left == B:
                 A.parent.left = A
             else:
                 A.parent.right = A
         B.parent = A
+        # case where rotating root
         if self.root == B:
             self.root = A
         self.update(B)
 
+    """rotates right A and B, when B.get_right() is A
+
+                    @rtype: None
+                    @returns: None
+    """
+
+    # Runs a fixed number of O(1) operations, which is O(1)
+
     def rotation_left(self, A, B):
+        # Moves node between A and B
         B.right = A.left
         B.right.parent = B
         A.left = B
         A.parent = B.parent
+        # Replaces B with A in its father's left\right
         if B.parent is not None:
             if B.parent.left == B:
                 A.parent.left = A
             else:
                 A.parent.right = A
         B.parent = A
+        # case where rotating root
         if self.root == B:
             self.root = A
         self.update(B)
 
-    def update(self, node):
+    """updates size and height of node and its parents
+
+                    @rtype: None
+                    @returns: None
+    """
+
+    # Runs a maximum of log(n) times,each time with O(1) operations. So, we get a(log(n)) = O(log(n)).
+
+    @staticmethod
+    def update(node):
+        # updates virtual node
         if not node.is_real_node():
             node.set_size(0)
             node.set_height(-1)
         else:
+            # runs for node and its parents
             while node is not None:
+                # If node has no initialized children
                 if node.left is None and node.right is None:
                     node.size = 1
                     node.height = 0
+                # If node has initialized child only on the right, add 1 to its size
                 elif node.left is None:
                     node.size = node.right.size + 1
                     node.height = node.right.height + 1
+                # If node has initialized child only on the right, add 1 to its size
                 elif node.right is None:
                     node.size = node.left.size + 1
                     node.height = node.left.height + 1
+                # If node has initialized children, add 1 to their size sum
                 else:
                     node.size = node.right.size + node.left.size + 1
                     node.height = max(node.right.height, node.left.height) + 1
+                # Progresses to parent of current node
                 node = node.parent
+
+    """searches for a AVLNode in the dictionary corresponding to the key
+
+    @type key: int
+    @param key: a key to be searched
+    @rtype: AVLNode
+    @returns: the AVLNode corresponding to key or None if key is not found.
+    """
+
+    # Goes on worst case the height of the tree(node not found, at lowest node), which is log(n),
+    # when n is our tree's size
 
     def search(self, key):
         def search_recursion(search_key, node):
-            if node is None:
+            if node is None:  # didn't find node
                 return None
-            if not node.is_real_node():
+            if not node.is_real_node():  # key belongs to a virtual node
                 return None
             else:
-                if node.get_key() == search_key:
+                if node.get_key() == search_key:  # if we find node, return it
                     return node
-                elif node.get_key() < search_key:
+                elif node.get_key() < search_key:  # if our key is greater than our current node's key
                     return search_recursion(search_key, node.get_right())
-                else:
+                else:  # if our key is smaller than our current node's keys
                     return search_recursion(search_key, node.get_left())
 
-        return search_recursion(key, self.root)
+        return search_recursion(key, self.root)  # returns the result of the recursive function
 
     """inserts val at position i in the dictionary
 
@@ -277,9 +377,17 @@ class AVLTree(object):
     @returns: the number of rebalancing operation due to AVL rebalancing
     """
 
+    # Finds where to insert(at most the height of the tree), and does a fixed number of actions.
+    # Updates, goes back up, commits a rotation(fixed number of actions) once on the way to root.
+    # Total: log(n) + d + b(log(n)) + c(log(n)) = log(n), when n is our tree's size,
+    # b is the number of actions for the rotation, d is the number of actions for insertion, and c the number of actions
+    # in every node we go up in update
+
     def insert(self, key, val):
-        if key is None:
+        if key is None:  # checks validity
             return
+
+        # initialize node
         new_node = AVLNode(key, val)
         new_node.set_height(0)
         new_node.left = AVLNode(None, None)
@@ -288,31 +396,32 @@ class AVLTree(object):
         new_node.right.parent = new_node
 
         def insert_inner(curr_node, parent, node):
-            if not curr_node.is_real_node():
+            if not curr_node.is_real_node():  # checks if we "fell off", and inserts on right side of leaf
                 if parent.get_key() > node.get_key():
                     parent.set_left(node)
                 else:
                     parent.set_right(node)
                 node.set_parent(parent)
-            else:
-                curr_node.set_height(curr_node.get_height() + 1)
+            else:  # progresses along tree to find right insert placement
                 if curr_node.get_key() > node.get_key():
                     insert_inner(curr_node.get_left(), curr_node, node)
                 else:
                     insert_inner(curr_node.get_right(), curr_node, node)
 
-        if self.root is None:
-            self.root = new_node
-        elif self.root.key is None:
+        if self.root is None:  # adds node if tree empty
             self.root = new_node
         else:
-            insert_inner(self.root, None, new_node)
+            if self.root.is_real_node():  # adds node if tree isn't empty
+                insert_inner(self.root, None, new_node)
+            else:  # adds node if tree empty
+                self.root = new_node
+
         temp = new_node
         rot_cnt = 0
-        self.update(new_node)
+        self.update(new_node)  # updates our node
         while temp is not None:
-            height_change = self.height_difference(temp.left, temp.right)
-            if height_change == 2:
+            height_change = self.height_difference(temp.left, temp.right)  # calculates BF(y)
+            if height_change == 2:  # checks if there is an imbalance from right and fixes it
                 if self.height_difference(temp.left.left, temp.left.right) == 1:
                     self.rotation_right(temp.left, temp)
                     rot_cnt += 1
@@ -320,7 +429,7 @@ class AVLTree(object):
                     self.rotation_left(temp.left.right, temp.left)
                     self.rotation_right(temp.left, temp)
                     rot_cnt += 2
-            if height_change == -2:
+            if height_change == -2:  # checks if there is an imbalance from right and fixes it
                 if self.height_difference(temp.right.left, temp.right.right) == -1:
                     self.rotation_left(temp.right, temp)
                     rot_cnt += 1
@@ -328,8 +437,8 @@ class AVLTree(object):
                     self.rotation_right(temp.right.left, temp.right)
                     self.rotation_left(temp.right, temp)
                     rot_cnt += 2
-            temp = temp.parent
-        return rot_cnt
+            temp = temp.parent  # advances to parent node
+        return rot_cnt  # returns total number of rotations
 
     """deletes node from the dictionary
 
@@ -339,50 +448,67 @@ class AVLTree(object):
     @returns: the number of rebalancing operation due to AVL rebalancing
     """
 
-    def delete(self, node):
-        self.successor(node).get_parent().set_left(self.successor(node).get_right())
-        self.successor(node).set_parent(node.get_parent())
-        node.set_parent(None)
-        self.successor(node).set_left(node.get_left())
-        self.successor(node).set_right(node.get_right())
-        if node.get_parent() is None:
-            self.root = self.successor(node)
-        node.set_right(None)
-        node.set_left(None)
-        if node.get_right() is None or node.get_left() is None:
-            if node.get_right() is not None:
-                node.get_right().set_parent(node.get_parent())
-                if node.get_parent().get_value() > node.get_value():
-                    node.get_parent().set_right(node.get_right())
-                else:
-                    node.get_parent().set_left(node.get_right())
-            else:
-                node.get_left().set_parent(node.get_parent())
-                if node.get_parent().get_value() > node.get_value():
-                    node.get_parent().set_right(node.get_left())
-                else:
-                    node.get_parent().set_left(node.get_left())
+    # Let as look at the worst case(deleting a node, it has a successor which needs rotations, and rotating everything).
+    # Finds where to delete(at most height of the tree), deletes temp(if needed), rotates(O(log(n)) and deletes node.
+    # Updates, goes back up, commits a number of rotations(less than log(n)) on the way to root.
+    # Total: log(n) + O(log(n)) + O(log(n)) + d + O(log(n)) + c(log(n)) = O(log(n)), when n is our tree's size,
+    # d is the number of actions for deletion, and c the number of actions in every node we go up in update.
 
-            temp = node.get_parent()
-            node.set_parent(None)
-            node.set_right(None)
-            node.set_left(None)
+    def delete(self, node):
+        if not node.get_right().is_real_node() or not node.get_left().is_real_node():  # checks if node has children
+            if node.get_right().is_real_node():  # checks if node has right child
+                node.get_right().set_parent(node.get_parent())
+                if node.get_parent() is None:  # special case for root node
+                    self.root = node.get_right()
+                    return 0
+                else:
+                    if node.get_parent().get_value() > node.get_value():  # checks side to insert children to parent
+                        node.get_parent().set_left(node.get_right())
+                    else:
+                        node.get_parent().set_right(node.get_right())
+            else:  # similar for left, just with possibility of no children
+                node.get_left().set_parent(node.get_parent())
+                if node.get_parent() is None:  # checks if deleted node is root
+                    if not node.get_left().is_real_node():
+                        self.root = None
+                    else:
+                        self.root = node.get_left()
+                    return 0
+                else:
+                    if node.get_parent().get_value() > node.get_value():  # checks side to insert children to parent
+                        node.get_parent().set_left(node.get_left())
+                    else:
+                        node.get_parent().set_right(node.get_left())
+
+            if node.get_parent() is not None:  # configures temp for rotations if needed
+                temp = node.get_parent()
+            temp_rot = 0
 
         else:
-            temp = node.successor()
-            temp.get_parent().set_left(temp.get_right())
-            if temp.get_right() is not None:
-                temp.get_right().set_parent(temp.get_parent())
+            # gets and deletes successor, saves the number of rotations it needed
+            temp = self.successor(node)
+            temp_rot = self.delete(temp)
+            # configures the replacement node's parent and children
+            temp.set_right(node.get_right())
+            temp.get_right().set_parent(temp)
             temp.set_parent(node.get_parent())
             temp.set_left(node.get_left())
-            temp.set_right(node.get_right())
-            if temp.get_parent() is None:
+            temp.get_left().set_parent(temp)
+            if temp.get_parent() is None:  # special case for root
                 self.root = temp
-            node.set_right(None)
-            node.set_left(None)
-            node.set_parent(None)
+            else:
+                if temp.get_parent().get_value() > temp.get_value():  # checks side to insert temp to parent
+                    temp.get_parent().set_left(temp)
+                else:
+                    temp.get_parent().set_right(temp)
 
-        return self.fix_rotations(temp)
+        # resets node
+        node.set_right(None)
+        node.set_left(None)
+        node.set_parent(None)
+        self.update(node)
+
+        return temp_rot + self.fix_rotations(temp)  # returns rotation fixer
 
     """returns an array representing dictionary 
 
@@ -390,25 +516,30 @@ class AVLTree(object):
     @returns: a sorted list according to key of tuples (key, value) representing the data structure
     """
 
+    # Commits two operations(append, condition) for every node, and one more for root.
+    # Since we have n nodes, this is done in 2n + 1 = O(n) time.
+
     def avl_to_array(self):
-        avl_array = []
+        avl_array = []   # initializes empty list
 
         def avl_to_array_inner(node):
-            if node is not None:
-                if node.is_real_node():
-                    avl_to_array_inner(node.get_left())
-                    avl_array.append((node.get_key(), node.get_value()))
-                    avl_to_array_inner(node.get_right())
+            if node.is_real_node():  # checks if we "fell off"
+                avl_to_array_inner(node.get_left())  # appends the smaller values
+                avl_array.append((node.get_key(), node.get_value()))  # appends current value
+                avl_to_array_inner(node.get_right())  # appends greater values
 
-        avl_to_array_inner(self.root)
+        if self.root is not None:  # checks if tree isn't empty
+            avl_to_array_inner(self.root)  # calls array appending function
 
-        return avl_array
+        return avl_array  # returns the completed array
 
     """returns the number of items in dictionary 
 
     @rtype: int
     @returns: the number of items in dictionary 
     """
+
+    # Returns a saved field, O(1)
 
     def size(self):
         return self.root.size
@@ -546,31 +677,37 @@ class AVLTree(object):
     @returns: the root, None if the dictionary is empty
     """
 
+    # Returns a saved field, O(1)
+
     def get_root(self):
         return self.root
 
+    # Updates node(a fixed number of actions for at most log(n) times), and commits at most log(n) rotations, with every
+    # one taking a fixed number of actions. Takes at most a(log(n)) + b(log(n)) = O(log(n)).
+
     def fix_rotations(self, node):
         rot_cnt = 0  # rotation counter
+        self.update(node)  # updates our current node
         while node is not None:
-            height_change = self.height_difference(node.parent.left, node.parent.right)
-            if height_change == 2:
-                if self.height_difference(node.left, node.right) == 1:
-                    self.rotation_right(node.left, node)
-                    rot_cnt += 1
-                else:
+            height_change = self.height_difference(node.left, node.right)  # calculates BF(y)
+            if height_change == 2:  # checks if there is an imbalance from right and fixes it
+                if self.height_difference(node.left.left, node.left.right) == -1:
                     self.rotation_left(node.left.right, node.left)
                     self.rotation_right(node.left, node)
                     rot_cnt += 2
-            if height_change == -2:
-                if self.height_difference(node.left, node.right) == -1:
+                else:
+                    self.rotation_right(node.left, node)
+                    rot_cnt += 1
+            if height_change == -2:  # checks if there is an imbalance from left and fixes it
+                if self.height_difference(node.right.left, node.right.right) == 1:
+                    self.rotation_right(node.right.left, node.right)
+                    self.rotation_left(node.right, node)
+                    rot_cnt += 2
+                else:
                     self.rotation_left(node.right, node)
                     rot_cnt += 1
-                else:
-                    self.rotation_left(node.right.left, node.right)
-                    self.rotation_right(node.right, node)
-                    rot_cnt += 2
-            node = node.parent
-        return rot_cnt
+            node = node.parent  # advances to parent node
+        return rot_cnt  # returns total number of rotations
 
 
 def print_tree(node, level=0):
