@@ -425,8 +425,6 @@ class AVLTree(object):
     """
 
     def split(self, node):
-        if node.key == 3648:
-            hi = 5
         left_tree = AVLTree()
         left_tree.root = node.left
         left_tree.root.set_parent(None)
@@ -502,8 +500,6 @@ class AVLTree(object):
                     node = node.left
                 else:
                     node = node.right
-        if key == 3648:
-            hi = 5
         x = AVLNode(key, val)
         if t1.root.key < t2.root.key:
             x.set_left(t1.root)
