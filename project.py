@@ -1,4 +1,4 @@
-# username - complete info
+# username - yaronj
 # id1      - 204912810
 # name1    - Yaron Jacob
 # id2      - 325720258
@@ -520,7 +520,7 @@ class AVLTree(object):
     # Since we have n nodes, this is done in 2n + 1 = O(n) time.
 
     def avl_to_array(self):
-        avl_array = []   # initializes empty list
+        avl_array = []  # initializes empty list
 
         def avl_to_array_inner(node):
             if node.is_real_node():  # checks if we "fell off"
@@ -555,35 +555,38 @@ class AVLTree(object):
     dictionary larger than node.key.
     """
 
+    # Creates 2 trees, left and right tree.
+    # Joins the keys higher than the node to the right tree and the lower keys to the left.
+    # No updates needed because join will always return a valid tree.
+    # Total: O(height difference+1), which is O(log(n))
+
     def split(self, node):
-        left_tree = AVLTree()
+        left_tree = AVLTree()  # creates new trees for joining
         left_tree.root = node.left
-        left_tree.root.set_parent(None)
+        left_tree.root.set_parent(None)  # setting the parents of the roots to be none
         right_tree = AVLTree()
         right_tree.root = node.right
         right_tree.root.set_parent(None)
         par = node.parent
-        while par is not None:
-            if par.key < node.key:
-                tree = AVLTree()
+        while par is not None:  # joining to the left if key is bigger than node key or to the right otherwise
+            if par.key < node.key:  # checks which side to join
+                tree = AVLTree()  # creates new tree to join to the left
                 tree.root = par.left
-                trl = tree.root.left
-                trr = tree.root.right
-                par.left.set_parent(None)
-                tree.join(left_tree, par.key, par.value)
+                par.left.set_parent(None)  # removes the parent in the original tree from the new one
+                tree.join(left_tree, par.key, par.value)  # joins the trees
                 left_tree.root = tree.root
 
-            else:
+            else:  # same as left side but for the right side
                 tree = AVLTree()
                 tree.root = par.right
                 par.right.set_parent(None)
                 right_tree.join(tree, par.key, par.value)
             par = par.parent
-        if not left_tree.root.is_real_node():
+        if not left_tree.root.is_real_node():  # checks if the root is none
             left_tree.root = None
         if not right_tree.root.is_real_node():
             right_tree.root = None
-        return left_tree, right_tree
+        return left_tree, right_tree  # returns the 2 lists
 
     """joins self with key and another AVLTree
 
@@ -598,8 +601,14 @@ class AVLTree(object):
     @returns: the absolute value of the difference between the height of the AVL trees joined
     """
 
+    # Finds the higher tree and puts it in t2 and the lower in t1
+    # Finds the node in t2 to make a child to the new node while t1 root would be the other child
+    # Updates from the node upwards to fix the height and size changes
+    # Rotates once (normal or double rotation) if needed
+    # Total: O(height of t2 - height of t1 + 1), which is o(log(n))
+
     def join(self, tree2, key, val):
-        if tree2.root is None:
+        if tree2.root is None:  # checks all the times that one of the trees is empty
             self.insert(key, val)
             return self.root.height + 1
         if self.root is None:
@@ -613,8 +622,7 @@ class AVLTree(object):
             tree2.insert(key, val)
             self.root = tree2.root
             return self.root.height + 1
-        res = self.height_difference(self.root, tree2.root) + 1
-        if tree2.root.height > self.root.height:
+        if tree2.root.height > self.root.height:  # makes t2 the bigger tree and t1 the smaller
             t1 = AVLTree()
             t2 = tree2
             t1.root = self.root
@@ -622,8 +630,9 @@ class AVLTree(object):
             t2 = AVLTree()
             t1 = tree2
             t2.root = self.root
+        res = self.height_difference(t2.root, t1.root) + 1  # the difference in height + 1
         node = t2.root
-        for i in range(t2.root.height):
+        for i in range(t2.root.height):  # finds the place to connect the trees
             if node.height == t1.root.height or node.height == t1.root.height + 1:
                 break
             else:
@@ -632,7 +641,7 @@ class AVLTree(object):
                 else:
                     node = node.right
         x = AVLNode(key, val)
-        if t1.root.key < t2.root.key:
+        if t1.root.key < t2.root.key:  # adds the new node to the tree
             x.set_left(t1.root)
             x.set_right(node)
         else:
@@ -642,17 +651,17 @@ class AVLTree(object):
         x.right.parent = x
         x.left.parent = x
         temp = x.parent
-        if temp is None:
+        if temp is None:  # returns if x is the root (no need to rebalance)
             self.root = x
             self.update(x)
             return res
-        if temp.right == x.right or temp.right == x.left:
+        if temp.right == x.right or temp.right == x.left:  # makes x the child to his parent
             temp.right = x
         if temp.left == x.right or temp.left == x.left:
             temp.left = x
         self.update(x)
         cur = temp
-        while temp is not None:
+        while temp is not None:  # rebalancing (as seen in insert)
             height_change = self.height_difference(temp.left, temp.right)
             if height_change == 2:
                 if self.height_difference(temp.left.left, temp.left.right) == 1:
@@ -669,7 +678,7 @@ class AVLTree(object):
             cur = temp
             temp = temp.parent
         self.root = cur
-        return res
+        return res  # returns the "cost" of the join
 
     """returns the root of the tree representing the dictionary
 
@@ -709,9 +718,3 @@ class AVLTree(object):
             node = node.parent  # advances to parent node
         return rot_cnt  # returns total number of rotations
 
-
-def print_tree(node, level=0):
-    if node is not None:
-        print_tree(node.left, level + 1)
-        print(' ' * 4 * level + '-> ' + str(node.value))
-        print_tree(node.right, level + 1)
